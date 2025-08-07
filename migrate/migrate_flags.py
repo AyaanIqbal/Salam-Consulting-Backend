@@ -15,19 +15,22 @@ for stage in stages:
     if entered_at < cutoff:
         customer_id = stage["customer_id"]
 
-        # Optional: check for existing flag to avoid duplicates
         existing = supabase.table("flags")\
             .select("id")\
             .eq("customer_id", customer_id)\
             .eq("flag_type", "blocked")\
             .execute()
 
-        if not existing.data:
-            flag = {
-                "id": gen_uuid(),
-                "customer_id": customer_id,
-                "flag_type": "blocked",
-                "notes": f"Stuck in stage {stage['stage_name']} since {entered_at.isoformat()}"
-            }
-            print(f"Inserting flag: {flag}")
-            supabase.table("flags").insert(flag).execute()
+        if existing.data:
+            print(f"Skipping existing 'blocked' flag for customer: {customer_id}")
+            continue
+
+        flag = {
+            "id": gen_uuid(),
+            "customer_id": customer_id,
+            "flag_type": "blocked",
+            "notes": f"Stuck in stage {stage['stage_name']} since {entered_at.isoformat()}"
+        }
+
+        print(f"Inserting new 'blocked' flag for customer: {customer_id}")
+        supabase.table("flags").insert(flag).execute()

@@ -3,7 +3,7 @@ from utils import supabase, load_orders_csv, get_created_at, gen_uuid, isoformat
 
 df = load_orders_csv()
 
-orders = df[[
+orders = df[[ 
     "Order number",
     "Contact email",
     "Item",
@@ -22,7 +22,7 @@ orders["customer_id"] = orders["email"].map(email_to_customer_id)
 
 orders = orders.dropna(subset=["customer_id"])
 
-orders["id"] = [gen_uuid() for _ in range(len(orders))]
+orders["id"] = [gen_uuid() for i in range(len(orders))]
 orders["created_at"] = df.apply(get_created_at, axis=1)
 
 for i, row in orders.iterrows():
@@ -37,5 +37,14 @@ for i, row in orders.iterrows():
         for j, k in row[["id", "order_number", "customer_id", "item", "price", "created_at"]].to_dict().items()
     }
 
-    print(cleaned_row)
-    supabase.table("orders").insert(cleaned_row).execute()
+    # Check if order_number already exists
+    existing = supabase.table("orders")\
+        .select("id")\
+        .eq("order_number", cleaned_row["order_number"])\
+        .execute()
+
+    if existing.data:
+        print(f"Skipping existing order number: {cleaned_row['order_number']}")
+    else:
+        print(f"Inserting new order: {cleaned_row['order_number']}")
+        supabase.table("orders").insert(cleaned_row).execute()

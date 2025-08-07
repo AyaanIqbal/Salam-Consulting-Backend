@@ -42,7 +42,6 @@ orders = orders.dropna(subset=["customer_id"])
 
 orders["created_at"] = df.apply(get_created_at, axis=1)
 
-# Loop through and conditionally insert
 for i, row in orders.iterrows():
     stage_name = stage_map.get(row["item"], "custom_service")
     entered_at = isoformat_timestamp(row["created_at"])
@@ -54,14 +53,17 @@ for i, row in orders.iterrows():
         .eq("entered_at", entered_at)\
         .execute()
 
-    if not existing.data:
-        stage_row = {
-            "id": gen_uuid(),
-            "customer_id": row["customer_id"],
-            "stage_name": stage_name,
-            "entered_at": entered_at,
-            "is_active": True
-        }
+    if existing.data:
+        print(f"Skipping existing stage for customer {row['email']}: {stage_name}")
+        continue
 
-        print(stage_row)
-        supabase.table("stages").insert(stage_row).execute()
+    stage_row = {
+        "id": gen_uuid(),
+        "customer_id": row["customer_id"],
+        "stage_name": stage_name,
+        "entered_at": entered_at,
+        "is_active": True
+    }
+
+    print(f"Inserting new stage for customer {row['email']}: {stage_name}")
+    supabase.table("stages").insert(stage_row).execute()
