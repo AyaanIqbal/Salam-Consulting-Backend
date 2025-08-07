@@ -1,0 +1,39 @@
+name: Sync Wix Data to Supabase
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"  # Every 6 hours
+  workflow_dispatch:       # Allow manual triggering too
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: Data Sync
+
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_API_KEY }}
+      WIX_API_KEY: ${{ secrets.WIX_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run customer migration
+        run: python migrate/migrate_customers.py
+
+      - name: Run order migration
+        run: python migrate/migrate_orders.py
+
+      - name: Run stage migration
+        run: python migrate/migrate_stages.py
+
+      - name: Run flag migration
+        run: python migrate/migrate_flags.py
