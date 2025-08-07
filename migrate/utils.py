@@ -9,9 +9,9 @@ import pytz
 load_dotenv()
 
 supabase_url = os.getenv("SUPABASE_URL")
-supabase_api_key = os.getenv("SUPABASE_SERVICE_ROLE_API_KEY")
+supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
-supabase: Client = create_client(supabase_url, supabase_api_key)
+supabase: Client = create_client(supabase_url, supabase_key)
 
 def load_orders_csv():
     return pd.read_csv("Orders.csv")
