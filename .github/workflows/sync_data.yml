@@ -6,7 +6,7 @@ on:
   workflow_dispatch:       # Allow manual triggering too
 
 jobs:
-  sync:
+  sync-data:
     runs-on: ubuntu-latest
     environment: Data Sync
 
