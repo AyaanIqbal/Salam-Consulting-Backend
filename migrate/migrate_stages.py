@@ -30,28 +30,38 @@ orders = df[[
     "Time"
 ]].copy()
 
-# clean columns
+# Clean column names
 orders.columns = ["order_number", "email", "item", "date", "time"]
 orders = orders.drop_duplicates(subset="order_number")
 
 email_to_customer_id = get_email_to_customer_id()
 orders["customer_id"] = orders["email"].map(email_to_customer_id)
 
-# drop orders with no matching customer
+# Drop orders with no matching customer
 orders = orders.dropna(subset=["customer_id"])
 
 orders["created_at"] = df.apply(get_created_at, axis=1)
 
+# Loop through and conditionally insert
 for i, row in orders.iterrows():
     stage_name = stage_map.get(row["item"], "custom_service")
+    entered_at = isoformat_timestamp(row["created_at"])
 
-    stage_row = {
-        "id": gen_uuid(),
-        "customer_id": row["customer_id"],
-        "stage_name": stage_name,
-        "entered_at": isoformat_timestamp(row["created_at"]),
-        "is_active": True
-    }
+    existing = supabase.table("stages")\
+        .select("id")\
+        .eq("customer_id", row["customer_id"])\
+        .eq("stage_name", stage_name)\
+        .eq("entered_at", entered_at)\
+        .execute()
 
-    print(stage_row)
-    supabase.table("stages").insert(stage_row).execute()
+    if not existing.data:
+        stage_row = {
+            "id": gen_uuid(),
+            "customer_id": row["customer_id"],
+            "stage_name": stage_name,
+            "entered_at": entered_at,
+            "is_active": True
+        }
+
+        print(stage_row)
+        supabase.table("stages").insert(stage_row).execute()
