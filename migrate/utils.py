@@ -11,6 +11,19 @@ load_dotenv()
 supabase_url = os.getenv("SUPABASE_URL")
 supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_API_KEY")
 
+# strip accidental quotes/whitespace
+def _clean(v: str | None) -> str:
+    return (v or "").strip().strip('"').strip("'")
+
+supabase_url = _clean(os.getenv("SUPABASE_URL"))
+supabase_key = _clean(os.getenv("SUPABASE_SERVICE_ROLE_API_KEY"))
+
+# Helpful validation
+if not supabase_url.startswith("https://") or ".supabase.co" not in supabase_url:
+    raise RuntimeError(f"SUPABASE_URL looks wrong: {supabase_url!r}")
+if not supabase_key:
+    raise RuntimeError("SUPABASE_SERVICE_ROLE_API_KEY is missing/empty")
+
 supabase: Client = create_client(supabase_url, supabase_key)
 
 def load_orders_csv():
