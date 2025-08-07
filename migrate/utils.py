@@ -9,7 +9,7 @@ import pytz
 load_dotenv()
 
 supabase_url = os.getenv("SUPABASE_URL")
-supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_API_KEY")
 
 supabase: Client = create_client(supabase_url, supabase_key)
 
@@ -18,7 +18,7 @@ def load_orders_csv():
 
 est = pytz.timezone("US/Eastern")
 def get_created_at(row):
-    try:
+    try:    
         full_str = f"{row['Date created']} {row['Time']}"
         dt = datetime.strptime(full_str, "%b %d, %Y %I:%M:%S %p")
         return est.localize(dt).astimezone(pytz.utc)

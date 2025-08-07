@@ -12,8 +12,7 @@ jobs:
 
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_API_KEY }}
-      WIX_API_KEY: ${{ secrets.WIX_API_KEY }}
+      SUPABASE_SERVICE_ROLE_API_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_API_KEY }}
 
     steps:
       - uses: actions/checkout@v3
